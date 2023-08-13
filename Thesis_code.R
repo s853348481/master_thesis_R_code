@@ -1,17 +1,42 @@
 # Master Thesis project
 
 
-#bayesian I optimality
-#Information matrix
+##########################Artificial Sweetener example
+
+
+#import I-optimal design
+kappa0_5_Iopt <- read_csv("kappa0.5_Iopt.csv")
+kappa0_5_Iopt=as.matrix(kappa0_5_Iopt)
+kappa0_5_Iopt_reformat=array(kappa0_5_Iopt,dim=c(3,2,7))
+kappa0_5_Iopt_reformat
+
+z=c(0, 1.0, 0.0,0.61, 0.39, 0.00, 0.0, 1.0, 0.0, 0.24, 0.30, 0.47,
+    0.0, 0.0, 1, 0, 0.67, 0.33, 1, 0, 0, 0.4, 0.6, 0.0, 0.22, 0.44,
+    0.33, 0.59, 0, 0.41, 0.4, 0.0, 0.6, 1.0, 0, 0, 0, 0.33, 0.67,
+    0.48, 0.25, 0.27)
+
+kappa0_5_Iopt_reformat=array(z,dim=c(3,2,7))
+
+#clustering
+clustered_design=clustering(kappa0_5_Iopt_reformat,k=12)
+#reformat to dim(3,2,6)
+clustered_design_reformat=array(clustered_design,dim=c(3,2,6))
+
+#plot
+plot_ternary_design(kappa0_5_Iopt_reformat)
+plot_ternary_design(clustered_design_reformat)
+#I-optimality
+mnl_get_opt_crit_value(clustered_design_reformat, beta, order=3,"I")
+
+beta=c(0,0.86,0.21,3.07,2.34,3.24,-20.59)
+#elbow curve
+elbow_plot(kappa0_5_Iopt_reformat, beta)
 
 
 
-
-#Coordiante exchange + clustering
-
-
-
-#
+#####################################################
+########## Run the following code first ################
+################################################
 
 library(purrr)
 library(ggplot2)
@@ -415,47 +440,46 @@ mnl_get_opt_crit_value(clustered_design_reformat,beta,3, "I")
 
 
 #elbow curve
+elbow_plot <- function(random_design, beta, k_values = 7:13) {
+  # Placeholder for the i-optimality values for each k.
+  i_opt_values <- numeric(length(k_values))
 
-k=13
-k%/%2
-# Assume we have a range of k values to evaluate.
-k_values <- 7:13
+  # For each k, perform the clustering and compute the I-optimality.
+  for (i in seq_along(k_values)) {
+    k <- k_values[i]
 
-# Placeholder for the i-optimality values for each k.
-i_opt_values <- numeric(length(k_values))
+    # Perform the clustering.
+    clustered_design <- clustering(random_design, k)
 
-# For each k, perform the clustering and compute the I-optimality.
-for (i in seq_along(k_values)) {
-  k <- k_values[i]
+    # Reformat the clustered_design
+    clustered_design_reformat <- array(clustered_design, dim = c(3, 2, k %/% 2))
 
-  # Perform the clustering.
-  clustered_design <- clustering(random_design, k)
+    # Compute the I-optimality.
+    i_opt_values[i] <- mnl_get_opt_crit_value(clustered_design_reformat, beta, 3, "I")
+  }
 
-  # Reformat the clustered_design
-  clustered_design_reformat <- array(clustered_design, dim = c(3, 2, k%/%2))
+  # Combine the k_values and i_opt_values into a data frame for plotting.
+  elbow_data <- data.frame(k = k_values, i_optimality = i_opt_values)
 
-  # Compute the I-optimality.
-  i_opt_values[i] <- mnl_get_opt_crit_value(clustered_design_reformat,beta,3, "I")
+  # Use ggplot2 to create the elbow plot.
+  library(ggplot2)
+  plot <- ggplot(elbow_data, aes(x = k, y = i_optimality)) +
+    geom_line() +
+    geom_point() +
+    xlab("Number of clusters (k)") +
+    ylab("I-Optimality") +
+    ggtitle("Elbow Curve for Clustering")
+
+  return(plot)
 }
 
-# Combine the k_values and i_opt_values into a data frame for plotting.
-elbow_data <- data.frame(k = k_values, i_optimality = i_opt_values)
-# Use ggplot2 to create the elbow plot.
-library(ggplot2)
-ggplot(elbow_data, aes(x = k, y = i_optimality)) +
-  geom_line() +
-  geom_point() +
-  xlab("Number of clusters (k)") +
-  ylab("I-Optimality") +
-  ggtitle("Elbow Curve for Clustering")
 
 
 
 
-
-
-
-
+##########################
+########V N S############
+########################
 
 
 #VNS
@@ -692,68 +716,10 @@ i_opt_value
 
 
 
-##########################Artificial Sweetener example
-
-beta=c(1,0.86,0.21,3.07,2.34,3.24,-20.59)
-#import I-optimal design
-kappa0_5_Iopt <- read_csv("kappa0.5_Iopt.csv")
-kappa0_5_Iopt=as.matrix(kappa0_5_Iopt)
-kappa0_5_Iopt_reformat=array(kappa0_5_Iopt,dim=c(3,2,7))
-kappa0_5_Iopt_reformat
-
-z=c(0, 1.0, 0.0,0.61, 0.39, 0.00, 0.0, 1.0, 0.0, 0.24, 0.30, 0.47,
-  0.0, 0.0, 1, 0, 0.67, 0.33, 1, 0, 0, 0.4, 0.6, 0.0, 0.22, 0.44,
-  0.33, 0.59, 0, 0.41, 0.4, 0.0, 0.6, 1.0, 0, 0, 0, 0.33, 0.67,
-  0.48, 0.25, 0.27)
-
-kappa0_5_Iopt_reformat=array(z,dim=c(3,2,7))
-
-#clustering
-clustered_design=clustering(kappa0_5_Iopt_reformat,k=12)
-#reformat to dim(3,2,6)
-clustered_design_reformat=array(clustered_design,dim=c(3,2,6))
-
-#plot
-plot_ternary_design(kappa0_5_Iopt_reformat)
-plot_ternary_design(clustered_design_reformat)
-#I-optimality
-mnl_get_opt_crit_value(clustered_design_reformat, beta, order=3,"I")
 
 
-#elbow curve
-k=13
-k%/%2
-# Assume we have a range of k values to evaluate.
-k_values <- 7:13
 
-# Placeholder for the i-optimality values for each k.
-i_opt_values <- numeric(length(k_values))
 
-# For each k, perform the clustering and compute the I-optimality.
-for (i in seq_along(k_values)) {
-  k <- k_values[i]
-
-  # Perform the clustering.
-  clustered_design <- clustering(kappa0_5_Iopt_reformat, k)
-
-  # Reformat the clustered_design
-  clustered_design_reformat <- array(clustered_design, dim = c(3, 2, k%/%2))
-
-  # Compute the I-optimality.
-  i_opt_values[i] <- mnl_get_opt_crit_value(clustered_design_reformat,beta,3, "I")
-}
-
-i_opt_values
-# Combine the k_values and i_opt_values into a data frame for plotting.
-elbow_data <- data.frame(k = k_values, i_optimality = i_opt_values)
-# Use ggplot2 to create the elbow plot.
-library(ggplot2)
-ggplot(elbow_data, aes(x = k, y = i_optimality)) +
-  geom_line() +
-  geom_point() +
-  xlab("Number of clusters (k)") +
-  ylab("I-Optimality") +
-  ggtitle("Elbow Curve for Clustering")
 
 
 
