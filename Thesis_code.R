@@ -863,34 +863,13 @@ plot_ternary_design(CE_30_reformat)
 
 
 ############VNS
-VNS_05= replace_and_modify(CE_05)
-CE_05
-VNS_05
-VNS_05_reformat=array(VNS_05,dim=c(3,2,6))
-plot_ternary_design(VNS_05_reformat)
+#VNS_05= replace_and_modify(CE_05)
+#CE_05
+#VNS_05
+##VNS_05_reformat=array(VNS_05,dim=c(3,2,6))
+##plot_ternary_design(VNS_05_reformat)
 
 
-#VNS_5
-VNS_5= replace_and_modify(CE_5)
-CE_5
-VNS_5
-VNS_5_reformat=array(VNS_5,dim=c(3,2,6))
-plot_ternary_design(VNS_5_reformat)
-
-#VNS_10
-VNS_10= replace_and_modify(CE_10)
-CE_10
-VNS_10
-VNS_10_reformat=array(VNS_10,dim=c(3,2,6))
-plot_ternary_design(VNS_10_reformat)
-
-
-#VNS_30
-VNS_30= replace_and_modify(CE_30)
-CE_30
-VNS_30
-VNS_30_reformat=array(VNS_30,dim=c(3,2,6))
-plot_ternary_design(VNS_30_reformat)
 
 
 

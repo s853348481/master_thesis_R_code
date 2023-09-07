@@ -113,29 +113,97 @@ compute_utility <- function(x_js, beta_star, beta_2FI, beta_3FI, order) {
   return(U_js)
 }
 
-MNL_compute_choice_probabilities <- function(design, beta, order) {
-  q <- dim(design)[1]
-  J <- dim(design)[2]
-  S <- dim(design)[3]
+MNL_compute_choice_probabilites = function(design, beta, order) {
 
-  n_parameters <- compute_parameters(q, order)
+  q = dim(design)[1]
+  J = dim(design)[2]
+  S = dim(design)[3]
 
-  beta_star <- beta[1:(q - 1)]
-  beta_2FI <- beta[(q):(q + n_parameters - q)]
-  beta_3FI <- beta[(q + n_parameters - q + 1):n_parameters]
 
-  U <- matrix(0, J, S)
-  for (j in 1:J) {
-    for (s in 1:S) {
-      x_js <- design[, j, s]
-      U[j, s] <- compute_utility(x_js, beta_star, beta_2FI, beta_3FI, order)
+  p1 = q - 1
+  p2 = q * (q - 1)/2
+  p3 = q * (q - 1) * (q - 2)/6
+
+  if (order == 1) {
+    n_parameters = p1
+  } else {
+    if (order == 2) {
+      n_parameters = p1 + p2
+    } else {
+      if (order == 3) {
+        n_parameters = p1 + p2 + p3
+      }
     }
   }
 
-  # Compute choice probabilities using matrix operations
-  exp_U <- exp(U)
-  P <- exp_U / rowSums(exp_U)
 
+
+
+  beta_star = beta[1:p1]  # modify
+  beta_2FI = beta[(p1 + 1):p2]
+  beta_3FI = beta[(p2 + 1):p3]
+
+
+  # define utility (matrix) of alternative j in choice set s for (i in 1:q){
+  U = matrix(rep(NA_real_, J * S), ncol = S)
+  for (j in 1:J) {
+    for (s in 1:S) {
+
+      # ORDER-1 X_JS
+
+      x_js = design[, j, s]
+      U_js_term1 = sum(x_js[1:p1] * beta_star)
+      u_js = U_js_term1
+
+
+      if (order >= 2) {
+        # ORDER-2 X_IJS*X_KJS - 2FI terms
+        x_second_order = rep(NA_real_, p2)
+        counter = 0
+        for (i in 1:(q - 1)) {
+          for (k in (i + 1):q) {
+            counter = counter + 1
+            x_ijs_x_kjs = design[i, j, s] * design[k, j, s]
+            x_second_order[counter] = x_ijs_x_kjs
+          }
+        }
+        U_js_term2 = sum(x_second_order * beta_2FI)
+        u_js = u_js + U_js_term2
+      }
+      # x_ijs_x_kjs = design[i,j,s]*design[k,j,s]
+      if (order >= 3) {
+        # 0RDER-3 X_IJS*X_KJS*XLJS - 3FI terms
+        x_third_order = rep(NA_real_, p3)
+        counter = 0
+        # i = 1 k = i+1 l = k+1
+        for (i in 1:(q - 2)) {
+          for (k in (i + 1):(q - 1)) {
+            for (l in (k + 1):q) {
+              counter = counter + 1
+              x_ijs_x_kjs_xljs = design[i, j, s] * design[k, j, s] * design[l,
+                                                                            j, s]
+              x_third_order[counter] = x_ijs_x_kjs_xljs
+            }
+          }
+        }
+        U_js_term3 = sum(x_third_order * beta_3FI)
+        u_js = u_js + U_js_term3
+      }
+
+      U[j, s] = u_js  # matrix of model expansion
+    }
+  }
+
+
+  # define choice probability of alternative j in choice s
+  P = matrix(rep(NA_real_, J * S), ncol = S)
+  for (j in 1:J) {
+    for (s in 1:S) {
+      u_js = U[j, s]
+      p_js = exp(u_js)/sum(exp(U[, s]))
+      P[j, s] = p_js  # choice probabilities form matrix of model expansion
+    }
+  }
   return(P)
 }
 
@@ -205,6 +273,64 @@ MNL_create_moment_matrix <- function(q, order) {
 
 
 MNL_create_moment_matrix(q=3,order=3)
+
+#model matrix
+#model matrix
+MNL_compute_model_matrix <- function(design, order) {
+  q = dim(design)[1]
+  J = dim(design)[2]
+  S = dim(design)[3]
+
+
+  p1 = q - 1
+  p2 = q * (q - 1)/2
+  p3 = q * (q - 1) * (q - 2)/6
+
+  if (order == 1) {
+    n_parameters = p1
+  } else {
+    if (order == 2) {
+      n_parameters = p1 + p2
+    } else {
+      if (order == 3) {
+        n_parameters = p1 + p2 + p3
+      }
+    }
+  }
+
+  model_array = array(rep(NA_real_, n_parameters * J * S), dim = c(n_parameters,
+                                                                   J, S))
+
+  if (order >= 1) {
+
+    model_array[1:(q - 1), , ] = design[1:(q - 1), , ]
+  }
+
+  if (order >= 2) {
+    counter = q - 1
+    for (i in 1:(q - 1)) {
+      for (j in (i + 1):q) {
+        counter = counter + 1
+        model_array[counter, , ] = design[i, , ] * design[j, , ]
+      }
+    }
+  }
+  if (order >= 3) {
+    # counter = 0
+    for (i in 1:(q - 2)) {
+      for (j in (i + 1):(q - 1)) {
+        for (k in (j + 1):q) {
+          counter = counter + 1
+          model_array[counter, , ] = design[i, , ] * design[j, , ] * design[k,
+                                                                            , ]
+        }
+      }
+    }
+  }
+
+  return(model_array)
+
+}
 
 
 #information matrix
@@ -493,7 +619,6 @@ initial_design[,1,1]
 rows[1,]
 unique_points=rows[1,]
 unique_points
-candidate_design[, j, s]
 ######
 
 improvement <- TRUE
