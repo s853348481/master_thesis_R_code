@@ -1490,3 +1490,333 @@ MNL_compute_information_matrix(design,beta,order=3)
 save.image("my_workspace.RData")
 load("my_workspace.RData")
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#cluster
+
+
+
+#getting points for elbow curve
+kappa0_5_Iopt_reformat
+c1=clustering_method(kappa0_5_Iopt_reformat,k=13,method='average')
+MNL_compute_bayesian_I_optiality(c1,order=3,beta_ma)
+
+kappa0_5_Iopt_reformat
+c2=clustering_method(kappa0_5_Iopt_reformat,k=12,method='average')
+MNL_compute_i_optimality(c2,beta,order=3)
+
+kappa0_5_Iopt_reformat
+c3=clustering_method(kappa0_5_Iopt_reformat,k=11,method='average')
+MNL_compute_i_optimality(c3,beta,order=3)
+
+kappa0_5_Iopt_reformat
+c4=clustering_method(kappa0_5_Iopt_reformat,k=10,method='average')
+MNL_compute_i_optimality(c4,beta,order=3)
+
+
+#getting points for elbow curves
+library(readr)
+kappa5_Iopt <- read_csv("kappa5_Iopt.csv")
+kappa5_Iopt=as.matrix(kappa5_Iopt)
+kappa5_Iopt_reformat=array(kappa5_Iopt,dim=c(3,2,7))
+kappa5_Iopt_reformat
+
+
+kappa5_Iopt_reformat
+c1=clustering_method(kappa5_Iopt_reformat,k=13,method='average')
+MNL_compute_bayesian_I_optiality(c1,order=3,beta_ma)
+
+kappa5_Iopt_reformat
+c2=clustering_method(kappa5_Iopt_reformat,k=12,method='average')
+MNL_compute_i_optimality(c2,beta,order=3)
+
+kappa5_Iopt_reformat
+c3=clustering_method(kappa5_Iopt_reformat,k=11,method='average')
+MNL_compute_i_optimality(c3,beta,order=3)
+
+kappa5_Iopt_reformat
+c4=clustering_method(kappa5_Iopt_reformat,k=10,method='average')
+MNL_compute_i_optimality(c4,beta,order=3)
+
+
+
+#getting points for elbow curves
+kappa10_Iopt <- read_csv("keppa10_Iopt.csv")
+kappa10_Iopt=as.matrix(kappa10_Iopt)
+kappa10_Iopt_reformat=array(kappa10_Iopt,dim=c(3,2,7))
+kappa10_Iopt_reformat
+
+
+kappa10_Iopt_reformat
+c1=clustering_method(kappa10_Iopt_reformat,k=13,method='average')
+MNL_compute_bayesian_I_optiality(c1,order=3,beta_ma)
+
+kappa10_Iopt_reformat
+c2=clustering_method(kappa10_Iopt_reformat,k=12,method='average')
+MNL_compute_i_optimality(c2,beta,order=3)
+
+kappa10_Iopt_reformat
+c3=clustering_method(kappa10_Iopt_reformat,k=11,method='average')
+MNL_compute_i_optimality(c3,beta,order=3)
+
+kappa10_Iopt_reformat
+c4=clustering_method(kappa10_Iopt_reformat,k=10,method='average')
+MNL_compute_i_optimality(c4,beta,order=3)
+
+
+#getting points for elbow curves
+kappa30_Iopt <- read_csv("keppa30_Iopt.csv")
+kappa30_Iopt=as.matrix(kappa30_Iopt)
+kappa30_Iopt_reformat=array(kappa30_Iopt,dim=c(3,2,7))
+kappa30_Iopt_reformat
+
+
+kappa30_Iopt_reformat
+c1=clustering_method(kappa30_Iopt_reformat,k=13,method='average')
+MNL_compute_bayesian_I_optiality(c1,order=3,beta_ma)
+
+kappa30_Iopt_reformat
+c2=clustering_method(kappa30_Iopt_reformat,k=12,method='average')
+MNL_compute_i_optimality(c2,beta,order=3)
+
+kappa30_Iopt_reformat
+c3=clustering_method(kappa30_Iopt_reformat,k=11,method='average')
+MNL_compute_i_optimality(c3,beta,order=3)
+
+kappa30_Iopt_reformat
+c4=clustering_method(kappa30_Iopt_reformat,k=10,method='average')
+MNL_compute_i_optimality(c4,beta,order=3)
+
+
+
+##########VNS with different kappa value
+#######Kappa0.5
+
+#VNS
+# RcppArmadillo and arrangements packages are needed for this code
+# install.packages("RcppArmadillo")
+# install.packages("arrangements")
+
+library(RcppArmadillo)
+library(arrangements)
+
+generate_simplex_lattice_design <- function(q, m) {
+  # Ensure that q and m are positive
+  if(q <= 0 || m <= 0){
+    stop("values should be positive integer")
+  }
+
+  # Generate levels
+  levels <- seq(0, 1, length.out = m + 1)
+
+  # Generate points
+  points <- as.matrix(expand.grid(rep(list(levels), q)))
+
+  # Filter points that sum to 1
+  design <- points[abs(rowSums(points) - 1) < 1e-9,]
+
+  return(design)
+}
+
+###unique rows
+unique_rows <- function(design) {
+  # Get dimensions of the array
+  q <- dim(design)[1]
+  j <- dim(design)[2]
+  s <- dim(design)[3]
+
+  # Reshape the array and find unique rows
+  arr <- array(t(design), c(j * s, q))
+  unique_rows <- unique(arr)
+
+  return(unique_rows)
+}
+
+#intial design and other points
+lattice_design=generate_simplex_lattice_design(3,5)
+lattice_design
+n <- nrow(lattice_design)
+n
+k=10
+j=2
+s=7
+lattice_indices <- sample(n, size=k, replace=FALSE)
+lattice_points <- lattice_design[lattice_indices, ]
+other_points <- lattice_design[-lattice_indices, ]
+# Choose two random points from the lattice_design
+set.seed(123)  # for reproducibility
+random_indices <- sample(1:nrow(lattice_points), 2)
+# Duplicate these points
+duplicated_points <- lattice_points[random_indices,]
+# Combine with original design to create new design
+initial_design <- rbind(lattice_points, duplicated_points)
+initial_design
+#############
+
+#VNS Functions
+unique_rows <- function(design) {
+  q <- dim(design)[1]
+  j <- dim(design)[2]
+  s <- dim(design)[3]
+  arr <- array(design, dim = c(q, j * s))
+  return(unique(arr, MARGIN = 2))
+}
+
+
+
+# VNS First Neighborhood
+initial_design_reformat=array(t(initial_design),dim=c(3,2,7))
+initial_design=initial_design_reformat
+
+alternatives <- dim(initial_design)[2]
+choice <-dim(initial_design)[3]
+
+i_opt_value <-MNL_compute_bayesian_I_optiality(candidate_design, order=3,beta_ma)
+rows <- unique_rows(initial_design_reformat)
+i_opt_value
+improvement <- TRUE
+while (improvement) {
+  improvement <- FALSE
+  for (s in 1:choice) {
+    if (improvement) {
+      break
+    }
+    for (j in 1:alternatives) {
+      if (improvement) {
+        break
+      }
+      candidate_design <- initial_design
+      current_mix <- initial_design[, j, s]
+
+      for (k in 1:nrow(rows)) {
+        unique_points <- rows[,k]
+        if (length(unique_points) != length(current_mix) || any(unique_points != current_mix)) {
+          candidate_design <- initial_design
+          candidate_design[, j, s] <- unique_points
+
+          i_new_value <- NA
+          try({
+            i_new_value <- MNL_compute_bayesian_I_optiality(candidate_design, order=3,beta_ma)
+          }, silent = TRUE)
+
+          if (is.na(i_new_value)) {
+            print("Singular matrix!")
+            next
+          }
+
+          if (i_opt_value >= i_new_value && i_new_value > 0) {
+            initial_design <- candidate_design
+            i_opt_value <- i_new_value
+            improvement <- TRUE
+          }
+        }
+      }
+    }
+  }
+}
+
+
+######### VNS Second neigbhorhood
+i_opt_value <- MNL_compute_bayesian_I_optiality(initial_design, order=3,beta_ma)
+improvement <- FALSE
+
+for (choice_idx in 1:choice) {
+  if (improvement) {
+    break
+  }
+  for (alternative_idx in 1:alternatives) {
+    if (improvement) {
+      break
+    }
+    for (other_choice_idx in 1:choice) {
+      if (improvement) {
+        break
+      }
+      for (other_alternative_idx in 1:alternatives) {
+        if (choice_idx == other_choice_idx) {
+          next
+        }
+        candidate_design <- initial_design
+        candidate_design[, alternative_idx, choice_idx] <- initial_design[, other_alternative_idx, other_choice_idx]
+        candidate_design[, other_alternative_idx, other_choice_idx] <- initial_design[, alternative_idx, choice_idx]
+
+        i_new_value <- NA
+        try({
+          i_new_value <- MNL_compute_bayesian_I_optiality(candidate_design, order=3,beta_ma)
+        }, silent = TRUE)
+
+        if (is.na(i_new_value)) {
+          print("Singular matrix!")
+          next
+        }
+
+        # improvement with a minimum scale of 0.01
+        if (i_opt_value >= (i_new_value + 0.01) && i_new_value > 0) {
+          initial_design <- candidate_design
+          i_opt_value <- i_new_value
+          improvement <- TRUE
+        }
+      }
+    }
+  }
+}
+
+i_opt_value
+####  VNS third neighborhood
+i_opt_value <- MNL_compute_bayesian_I_optiality(initial_design, order=3,beta_ma)
+
+design_points <- unique_rows(initial_design)
+q <- dim(design_points)[2]
+
+for (i in 1:nrow(design_points)) {
+  improvement <- FALSE
+
+  # Find indices where design points match
+  indices <- which(apply(aperm(initial_design, c(2,1,3)), 1, function(x) all(x == design_points[i,])))
+
+  # convert linear indices to array indices
+  array_indices <- arrayInd(indices, .dim = dim(initial_design)[2:3])
+
+  for (j in 1:length(other_points)) {
+    candidate_design <- initial_design
+    candidate_design[, array_indices[,1], array_indices[,2]] <- matrix(rep(other_points[j], each = length(indices)), nrow = q)
+
+    i_new_value <- NA
+    try({
+      i_new_value <- MNL_compute_bayesian_I_optiality(candidate_design, order=3,beta_ma)
+    }, silent = TRUE)
+
+    if (is.na(i_new_value)) {
+      print("Singular matrix!")
+      next
+    }
+
+    if (i_opt_value >= i_new_value && i_new_value > 0) {
+      initial_design <- candidate_design
+      i_opt_value <- i_new_value
+      other_points[j] <- design_points[i, ]
+      improvement <- TRUE
+      break
+    }
+  }
+
+  if (improvement) {
+    break
+  }
+}
+
+#Final I optimality value
+i_opt_value
+

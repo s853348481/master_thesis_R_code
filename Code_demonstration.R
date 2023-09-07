@@ -606,7 +606,7 @@ initial_design=initial_design_reformat
 alternatives <- dim(initial_design)[2]
 choice <-dim(initial_design)[3]
 
-i_opt_value <- mnl_get_opt_crit_value(initial_design_reformat, beta, order=3,"I")
+i_opt_value <-MNL_compute_bayesian_I_optiality(candidate_design, order=3,beta_ma)
 rows <- unique_rows(initial_design_reformat)
 i_opt_value
 #######
@@ -643,7 +643,7 @@ while (improvement) {
 
           i_new_value <- NA
           try({
-            i_new_value <- mnl_get_opt_crit_value(candidate_design, beta, order=3,"I")
+            i_new_value <- MNL_compute_bayesian_I_optiality(candidate_design, order=3,beta_ma)
           }, silent = TRUE)
 
           if (is.na(i_new_value)) {
@@ -664,7 +664,7 @@ while (improvement) {
 
 
 ######### VNS Second neigbhorhood
-i_opt_value <- mnl_get_opt_crit_value(initial_design, beta, order=3,"I")
+i_opt_value <- MNL_compute_bayesian_I_optiality(initial_design, order=3,beta_ma)
 improvement <- FALSE
 
 for (choice_idx in 1:choice) {
@@ -689,7 +689,7 @@ for (choice_idx in 1:choice) {
 
         i_new_value <- NA
         try({
-          i_new_value <- mnl_get_opt_crit_value(candidate_design, beta, order=3,"I")
+          i_new_value <- MNL_compute_bayesian_I_optiality(candidate_design, order=3,beta_ma)
         }, silent = TRUE)
 
         if (is.na(i_new_value)) {
@@ -710,7 +710,7 @@ for (choice_idx in 1:choice) {
 
 i_opt_value
 ####  VNS third neighborhood
-i_opt_value <- mnl_get_opt_crit_value(initial_design, beta, order=3,"I")
+i_opt_value <- MNL_compute_bayesian_I_optiality(initial_design, order=3,beta_ma)
 
 design_points <- unique_rows(initial_design)
 q <- dim(design_points)[2]
@@ -730,7 +730,7 @@ for (i in 1:nrow(design_points)) {
 
     i_new_value <- NA
     try({
-      i_new_value <- mnl_get_opt_crit_value(candidate_design, beta, order=3,"I")
+      i_new_value <- MNL_compute_bayesian_I_optiality(candidate_design, order=3,beta_ma)
     }, silent = TRUE)
 
     if (is.na(i_new_value)) {
